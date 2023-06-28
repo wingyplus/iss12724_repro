@@ -7,6 +7,12 @@ Mix.install(
 
 alias Dagger.{Container, Host, Query}
 
+[elixir, otp, platform] =
+  case System.argv() do
+    [elixir, otp] -> [elixir, otp, "linux/arm64/v8"]
+    [elixir, otp, platform] -> [elixir, otp, platform]
+  end
+
 client = Dagger.connect!()
 
 source =
@@ -15,8 +21,8 @@ source =
   |> Host.directory(".")
 
 client
-|> Query.container(platform: "linux/arm64/v8")
-|> Container.from("hexpm/elixir:1.15.0-erlang-26.0.1-ubuntu-jammy-20230126")
+|> Query.container(platform: platform)
+|> Container.from("hexpm/elixir:#{elixir}-erlang-#{otp}-ubuntu-jammy-20230126")
 |> Container.with_mounted_directory("/app", source)
 |> Container.with_workdir("/app")
 |> Container.with_exec(["mix", "local.rebar", "--force"])
